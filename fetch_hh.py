@@ -4,6 +4,10 @@ import requests
 import pprint
 from itertools import groupby
 
+class SpaceReturnEmptyImgList(Exception):
+    """Declare special exception."""
+    pass
+
 def predict_rub_salary(salary_dict, currency='RUR'):
     multiplier_top = 0.8
     multiplier_bottom = 2 - multiplier_top
@@ -108,7 +112,6 @@ def print_language_stat_asciitables(title, stat_dict):
     _table_data.insert(0, top)
 
     table_instance = AsciiTable(_table_data, title)
-    table_instance.justify_columns[2] = 'left'
     print(table_instance.table)
 
 
