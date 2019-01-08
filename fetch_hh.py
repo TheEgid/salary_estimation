@@ -4,15 +4,17 @@ import requests
 import pprint
 from itertools import groupby
 
-def predict_rub_salary(salary_dict):
+def predict_rub_salary(salary_dict, currency='RUR'):
+    multiplier_top = 0.8
+    multiplier_bottom = 2 - multiplier_top
     if salary_dict is None:
         return None
-    elif salary_dict['currency'] == 'RUR':
+    elif salary_dict['currency'] == currency:
         try:
             if (salary_dict['from'] is None) and (salary_dict['to'] is not None):
-                return int(salary_dict['to']) * 0.8
+                return int(salary_dict['to']) * multiplier_top
             elif (salary_dict['from'] is not None) and (salary_dict['to'] is None):
-                return int(salary_dict['from'] * 1.2)
+                return int(salary_dict['from'] * multiplier_bottom)
             elif (salary_dict['from'] is None) and (salary_dict['to'] is None):
                 return None
             else:
