@@ -1,16 +1,33 @@
 from __future__ import print_function
-from terminaltables import AsciiTable
 import requests
 import pprint
 from itertools import groupby
+from terminaltables import AsciiTable
+
 
 class SpaceReturnEmptyImgList(Exception):
     """Declare special exception."""
     pass
 
-def predict_rub_salary(salary_dict, currency='RUR'):
+def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
+    """Predict salary calculation. By default - ruble.
+
+    Args:
+        salary_dict(dict): the dictionary with a range of salaries
+        currency(str): default 'RUR'
+        multiplier(int): default 2. equal to the number of salary bounds in the dictionary
+        
+    Returns:
+        predict_rub_salary(int)
+    Raises:
+        exceptions returns None
+    Examples:
+        >>> print(predict_rub_salary({})
+        [0, 1, 2, 3]
+    """
+ 
     multiplier_top = 0.8
-    multiplier_bottom = 2 - multiplier_top
+    multiplier_bottom = multiplier - multiplier_top
     if salary_dict is None:
         return None
     elif salary_dict['currency'] == currency:
@@ -22,26 +39,30 @@ def predict_rub_salary(salary_dict, currency='RUR'):
             elif (salary_dict['from'] is None) and (salary_dict['to'] is None):
                 return None
             else:
-                return int((int(salary_dict['from']) + int(salary_dict['to']))/2)
+                return (int(salary_dict['from']) + int(salary_dict['to'])) // multiplier
         except:
             return None
     else:
         return None
 
 
-def get_main_vacancies_qty(id_list):
-    """Extract image links.
+def get_language_vacancies_dict(language_list):
+    """Get dictionaries with vacancies of programmers from Web API HeadHunter.ru.
 
     Args:
-        id_list(list): the list of images ID
+        language_list(list): the list with names of programming language
     Returns:
-        id_list(list): the list of urls for images
+        main_vacancies_dict(dict):  key: url with search results vacancies for particular programming language 
+                                    value: number of pages (urls) with vacancies                              
+    Raises:
+        exceptions returns None
     """
+    
     main_vacancies_dict = {}
-    id_list.sort()
-    for id in id_list:
+    language_list.sort()
+    for language in language_list:
         params = {
-            'text': 'Программист {}'.format(id),
+            'text': 'Программист {}'.format(language),
             'area': 1,
             'from': 'cluster_area',
             'period': 30
@@ -64,7 +85,7 @@ def make_page_vacancy_url(vacancies_dict):
     return new_vacancies_dict
 
 
-def extract_vacancy_url(url_dict):
+def extract_vacancy_from_url(url_dict):
     for lang, _url in url_dict.items():
         salary_list = []
         response = requests.get(_url)
@@ -116,9 +137,9 @@ def print_language_stat_asciitables(title, stat_dict):
 
 
 def make_headhunter_salary_statistics(_languages):
-    main_vacancies_list = get_main_vacancies_qty(_languages)
+    main_vacancies_list = get_language_vacancies_dict(_languages)
     all_vacancies_dict = make_page_vacancy_url(main_vacancies_list)
-    temp_vacancy_language_list = [extract_vacancy_url(x) for x in
+    temp_vacancy_language_list = [extract_vacancy_from_url(x) for x in
                                   all_vacancies_dict]
     vacancy_language_list = (
     [vacancy for sublist in temp_vacancy_language_list for vacancy in sublist])
