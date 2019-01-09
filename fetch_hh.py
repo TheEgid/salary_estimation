@@ -10,43 +10,6 @@ class SpaceReturnEmptyImgList(Exception):
     pass
 
 
-def predict_rub_salary(salary_dict, currency='RUR', multiplier=2, factor_top=0.4, factor_bottom = 0.6)):
-    """Predict salary calculation. By default - ruble.
-
-    Args:
-        salary_dict (dict): The dictionary with a range of salaries.
-        currency(str): Defaults to 'RUR'.
-        multiplier(int): Equal to the number of salary bounds in the dictionary. Defaults to 2.
-        factor_top(float): The factor of the top salary bound.
-        factor_bottom(float): The factor of the bottom salary bound.
-    Returns:
-        predict_rub_salary(int)
-    Raises:
-        Exceptions returns None.
-    Examples:
-        >>> print(predict_rub_salary({})
-        [0, 1, 2, 3]
-    """
- 
-
-    if salary_dict is None:
-        return None
-    elif salary_dict['currency'] == currency:
-        try:
-            if (salary_dict['from'] is None) and (salary_dict['to'] is not None):
-                return int(salary_dict['to']) * factor_top * multiplier
-            elif (salary_dict['from'] is not None) and (salary_dict['to'] is None):
-                return int(salary_dict['from']) * factor_bottom * multiplier
-            elif (salary_dict['from'] is None) and (salary_dict['to'] is None):
-                return None
-            else:
-                return (int(salary_dict['from']) + int(salary_dict['to'])) // multiplier
-        except KeyError:
-            return None
-    else:
-        return None
-
-
 def get_all_pages_vacancies_dict(language_list, search_period=30):
     """Get dictionaries with vacancies of programmers from Web API HeadHunter.ru.
 
@@ -54,9 +17,11 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
         language_list(list): The list with names of programming language.
         search_period(int, optional): Over these last days search. Defaults to 30.
     Returns:
-        all_pages_vacancies_dict(dict): Dictionary key contains first page url with search results vacancies for particular 
-        programming language. Dictionary value contains number of all pages (urls with search results vacancies for 
-        particular programming language)                            
+        all_pages_vacancies_dict(dict): Dictionary key is name of programming language. Dictionary value contains list (2 elements).
+        First element is first page url with search results vacancies for particular programming language. Second element - is number 
+        of all pages (urls with search results).
+        
+             Dictionary value contains           
     Raises:
         exception ValueError
     """
@@ -72,7 +37,7 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
         }
         response = requests.get(_url, params=params)
         if response.ok:
-            all_vacancies_dict.update({id: [response.url, response.json()['pages']]})
+            all_vacancies_dict.update({language: [response.url, response.json()['pages']]})
         else:
             raise ValueError('response error!')
     return all_pages_vacancies_dict
@@ -100,6 +65,43 @@ def extract_vacancy_from_url(url_dict):
             raise ValueError('response error!')
 
 
+def predict_rub_salary(salary_dict, currency='RUR', multiplier=2, factor_top=0.4, factor_bottom = 0.6)):
+    """Predict salary calculation. By default - ruble.
+
+    Args:
+        salary_dict (dict): The dictionary with a range of salaries.
+        currency(str, optional): Defaults to 'RUR'.
+        multiplier(int, optional): Equal to the number of salary bounds in the dictionary. Defaults to 2.
+        factor_top(float, optional): The factor of the top salary bound.
+        factor_bottom(float, optional): The factor of the bottom salary bound.
+    Returns:
+        predict_rub_salary(int)
+    Raises:
+        Exceptions returns None.
+    Examples:
+        >>> print(predict_rub_salary({})
+        [0, 1, 2, 3]
+    """
+ 
+
+    if salary_dict is None:
+        return None
+    elif salary_dict['currency'] == currency:
+        try:
+            if (salary_dict['from'] is None) and (salary_dict['to'] is not None):
+                return int(salary_dict['to']) * factor_top * multiplier
+            elif (salary_dict['from'] is not None) and (salary_dict['to'] is None):
+                return int(salary_dict['from']) * factor_bottom * multiplier
+            elif (salary_dict['from'] is None) and (salary_dict['to'] is None):
+                return None
+            else:
+                return (int(salary_dict['from']) + int(salary_dict['to'])) // multiplier
+        except KeyError:
+            return None
+    else:
+        return None
+    
+    
 def make_salary_stat(raw_data):
     salary_stat_dict = {}
     languages_raw_data_list = []
