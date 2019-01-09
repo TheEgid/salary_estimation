@@ -13,9 +13,9 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
     """Predict salary calculation. By default - ruble.
 
     Args:
-        salary_dict(dict): the dictionary with a range of salaries
-        currency(str): default 'RUR'
-        multiplier(int): default 2. equal to the number of salary bounds in the dictionary
+        salary_dict(dict): The dictionary with a range of salaries.
+        currency(str): Defaults to 'RUR'.
+        multiplier(int): Equal to the number of salary bounds in the dictionary. Defaults to 2.
         
     Returns:
         predict_rub_salary(int)
@@ -46,34 +46,35 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
         return None
 
 
-def get_language_vacancies_dict(language_list):
+def get_all_pages_vacancies_dict(language_list, search_period=30):
     """Get dictionaries with vacancies of programmers from Web API HeadHunter.ru.
 
     Args:
-        language_list(list): the list with names of programming language
+        language_list(list): The list with names of programming language.
+        search_period(int, optional): Over these last days search. Defaults to 30.
     Returns:
-        main_vacancies_dict(dict):  key: url with search results vacancies for particular programming language 
-                                    value: number of pages (urls) with vacancies                              
+        all_pages_vacancies_dict(dict): Dictionary key contains first page url with search results vacancies for particular 
+        programming language. Dictionary value contains number of all pages (urls with search results vacancies for 
+        particular programming language)                            
     Raises:
         exceptions returns None
     """
-    
-    main_vacancies_dict = {}
-    language_list.sort()
-    for language in language_list:
+
+    _url = 'https://api.hh.ru/vacancies'
+    all_pages_vacancies_dict = {}
+    for language in language_list.sort():
         params = {
             'text': 'Программист {}'.format(language),
             'area': 1,
             'from': 'cluster_area',
-            'period': 30
+            'period': search_period
         }
-        _url = 'https://api.hh.ru/vacancies'
         response = requests.get(_url, params=params)
         if response.ok:
-            main_vacancies_dict.update({id: [response.url, response.json()['pages']]})
+            all_vacancies_dict.update({id: [response.url, response.json()['pages']]})
         else:
             return None
-    return main_vacancies_dict
+    return all_pages_vacancies_dict
 
 
 def make_page_vacancy_url(vacancies_dict):
@@ -137,10 +138,10 @@ def print_language_stat_asciitables(title, stat_dict):
 
 
 def make_headhunter_salary_statistics(_languages):
-    main_vacancies_list = get_language_vacancies_dict(_languages)
-    all_vacancies_dict = make_page_vacancy_url(main_vacancies_list)
+    searched_vacancies = get_all_vacancies_dict(_languages)
+    all_vacancies = make_page_vacancy_url(searched_vacancies)
     temp_vacancy_language_list = [extract_vacancy_from_url(x) for x in
-                                  all_vacancies_dict]
+                                  all_vacancies]
     vacancy_language_list = (
     [vacancy for sublist in temp_vacancy_language_list for vacancy in sublist])
     return make_salary_stat(vacancy_language_list)
