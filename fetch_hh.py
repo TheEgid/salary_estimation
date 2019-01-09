@@ -10,25 +10,25 @@ class SpaceReturnEmptyImgList(Exception):
     pass
 
 
-def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
+def predict_rub_salary(salary_dict, currency='RUR', multiplier=2, factor_top=0.4, factor_bottom = 0.6)):
     """Predict salary calculation. By default - ruble.
 
     Args:
-        salary_dict(dict): The dictionary with a range of salaries.
+        salary_dict (dict): The dictionary with a range of salaries.
         currency(str): Defaults to 'RUR'.
         multiplier(int): Equal to the number of salary bounds in the dictionary. Defaults to 2.
-        
+        factor_top(float): The factor of the top salary bound.
+        factor_bottom(float): The factor of the bottom salary bound.
     Returns:
         predict_rub_salary(int)
     Raises:
-        exceptions returns None
+        Exceptions returns None.
     Examples:
         >>> print(predict_rub_salary({})
         [0, 1, 2, 3]
     """
  
-    factor_top = 0.4
-    factor_bottom = 0.6
+
     if salary_dict is None:
         return None
     elif salary_dict['currency'] == currency:
@@ -41,7 +41,7 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
                 return None
             else:
                 return (int(salary_dict['from']) + int(salary_dict['to'])) // multiplier
-        except:
+        except KeyError:
             return None
     else:
         return None
@@ -79,12 +79,12 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
 
 
 def make_page_vacancy_url(vacancies_dict):
-    new_vacancies_dict = []
+    new_vacancies = []
     for lang, [_url, _pages_qty] in vacancies_dict.items():
         for page_number in range(0, _pages_qty):
-            new_vacancies_dict.append({lang: '{}&page={}'.format(_url,
+            new_vacancies.append({lang: '{}&page={}'.format(_url,
                                                                  str(page_number))})
-    return new_vacancies_dict
+    return new_vacancies
 
 
 def extract_vacancy_from_url(url_dict):
