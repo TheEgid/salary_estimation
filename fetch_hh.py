@@ -26,16 +26,16 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
         [0, 1, 2, 3]
     """
  
-    multiplier_top = 0.8
-    multiplier_bottom = multiplier - multiplier_top
+    factor_top = 0.4
+    factor_bottom = 0.6
     if salary_dict is None:
         return None
     elif salary_dict['currency'] == currency:
         try:
             if (salary_dict['from'] is None) and (salary_dict['to'] is not None):
-                return int(salary_dict['to']) * multiplier_top
+                return int(salary_dict['to']) * factor_top * multiplier
             elif (salary_dict['from'] is not None) and (salary_dict['to'] is None):
-                return int(salary_dict['from'] * multiplier_bottom)
+                return int(salary_dict['from']) * factor_bottom * multiplier
             elif (salary_dict['from'] is None) and (salary_dict['to'] is None):
                 return None
             else:
