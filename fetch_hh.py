@@ -9,6 +9,7 @@ class SpaceReturnEmptyImgList(Exception):
     """Declare special exception."""
     pass
 
+
 def predict_rub_salary(salary_dict, currency='RUR', multiplier=2):
     """Predict salary calculation. By default - ruble.
 
@@ -57,7 +58,7 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
         programming language. Dictionary value contains number of all pages (urls with search results vacancies for 
         particular programming language)                            
     Raises:
-        exceptions returns None
+        exception ValueError
     """
 
     _url = 'https://api.hh.ru/vacancies'
@@ -73,7 +74,7 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
         if response.ok:
             all_vacancies_dict.update({id: [response.url, response.json()['pages']]})
         else:
-            return None
+            raise ValueError('response error!')
     return all_pages_vacancies_dict
 
 
@@ -87,8 +88,8 @@ def make_page_vacancy_url(vacancies_dict):
 
 
 def extract_vacancy_from_url(url_dict):
+    salary_list = []
     for lang, _url in url_dict.items():
-        salary_list = []
         response = requests.get(_url)
         if response.ok:
             fetch = response.json()['items']
@@ -96,11 +97,11 @@ def extract_vacancy_from_url(url_dict):
                 salary_list.append((lang, predict_rub_salary(vacancy['salary'])))
             return salary_list
         else:
-            return None
+            raise ValueError('response error!')
 
 
 def make_salary_stat(raw_data):
-    salary_stat = {}
+    salary_stat_dict = {}
     languages_raw_data_list = []
     data = sorted(raw_data, key=lambda x: x[0])
     for k, g in groupby(data, lambda x: x[0]):
@@ -117,8 +118,8 @@ def make_salary_stat(raw_data):
                               'average_salary': int(languages_mean)
                               }
                          }
-        salary_stat.update(language_stat)
-    return salary_stat
+        salary_stat_dict.update(language_stat)
+    return salary_stat_dict
 
 
 def print_language_stat_asciitables(title, stat_dict):
