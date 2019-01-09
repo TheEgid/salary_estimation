@@ -22,7 +22,7 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
             search results vacancies for particular programming language. Second element is 
             number of all pages (urls with search results).         
     Raises:
-        exception ValueError
+        ValueError: Raises an exception.
     """
 
     _url = 'https://api.hh.ru/vacancies'
@@ -55,7 +55,7 @@ def make_page_vacancy_url_list(all_pages_vacancies_dict):
         new_vacancies(list): The list of dictionares with all pages url with 
             search results vacancies for particular programming language
     Raises:
-        exception VacanciesDictionaryError
+        VacanciesDictionaryError: Raises an exception KeyError, ValueError.
     """
     
     new_vacancies = []
@@ -94,7 +94,7 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2, factor_top=0.4
     Returns:
         predict_rub_salary(int)
     Raises:
-        Exceptions returns None.
+        All exceptions returns None.
     Examples:
         >>> print(predict_rub_salary({})
         [0, 1, 2, 3]
