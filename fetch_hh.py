@@ -5,7 +5,7 @@ from itertools import groupby
 from terminaltables import AsciiTable
 
 
-class SpaceReturnEmptyImgList(Exception):
+class VacanciesDictionaryError(Exception):
     """Declare special exception."""
     pass
 
@@ -17,11 +17,10 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
         language_list(list): The list with names of programming language.
         search_period(int, optional): Over these last days search. Defaults to 30.
     Returns:
-        all_pages_vacancies_dict(dict): Dictionary key is name of programming language. Dictionary value contains list (2 elements).
-        First element is first page url with search results vacancies for particular programming language. Second element - is number 
-        of all pages (urls with search results).
-        
-             Dictionary value contains           
+        all_pages_vacancies_dict(dict): Dictionary key is name of programming language.
+            Dictionary value contains list (2 elements). First element is first page url with 
+            search results vacancies for particular programming language. Second element is 
+            number of all pages (urls with search results).         
     Raises:
         exception ValueError
     """
@@ -43,13 +42,31 @@ def get_all_pages_vacancies_dict(language_list, search_period=30):
     return all_pages_vacancies_dict
 
 
-def make_page_vacancy_url(vacancies_dict):
+def make_page_vacancy_url_list(all_pages_vacancies_dict):
+    """Get list of dictionaries with urls of all pages with search results vacancies for 
+                                                         particular programming language.
+
+    Args:
+        vacancies_dict(dict): Dictionary key is name of programming language.
+            Dictionary value contains list (2 elements). First element is first page url with 
+            search results vacancies for particular programming language. Second element is 
+            number of all pages (urls with search results).
+    Returns:
+        new_vacancies(list): The list of dictionares with all pages url with 
+            search results vacancies for particular programming language
+    Raises:
+        exception VacanciesDictionaryError
+    """
+    
     new_vacancies = []
-    for lang, [_url, _pages_qty] in vacancies_dict.items():
-        for page_number in range(0, _pages_qty):
-            new_vacancies.append({lang: '{}&page={}'.format(_url,
+    try:
+        for language, [_url, _pages_qty] in all_pages_vacancies_dict.items():
+            for page_number in range(0, _pages_qty):
+                new_vacancies.append({language: '{}&page={}'.format(_url,
                                                                  str(page_number))})
-    return new_vacancies
+        return new_vacancies
+    except KeyError, ValueError:
+        raise VacanciesDictionaryError
 
 
 def extract_vacancy_from_url(url_dict):
@@ -72,8 +89,8 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2, factor_top=0.4
         salary_dict (dict): The dictionary with a range of salaries.
         currency(str, optional): Defaults to 'RUR'.
         multiplier(int, optional): Equal to the number of salary bounds in the dictionary. Defaults to 2.
-        factor_top(float, optional): The factor of the top salary bound.
-        factor_bottom(float, optional): The factor of the bottom salary bound.
+        factor_top(float, optional): The factor of the top salary bound. Defaults to 0.4
+        factor_bottom(float, optional): The factor of the bottom salary bound. Defaults to 0.6
     Returns:
         predict_rub_salary(int)
     Raises:
@@ -83,7 +100,6 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2, factor_top=0.4
         [0, 1, 2, 3]
     """
  
-
     if salary_dict is None:
         return None
     elif salary_dict['currency'] == currency:
@@ -124,7 +140,14 @@ def make_salary_stat(raw_data):
     return salary_stat_dict
 
 
-def print_language_stat_asciitables(title, stat_dict):
+def print_language_stat_ascitables(title, stat_dict):
+     """ Display the amount salary from vacancies for programming languages in the command line interface.
+
+    Args:
+        title(str): The title of ANCI table.
+        stat_dict(dict): The body of ANCI table.
+    """
+        
     top = ['Язык программирования', 'Найдено вакансий', 'Обработано',
            'Средняя зарплата']
     _table_data = []
@@ -133,20 +156,25 @@ def print_language_stat_asciitables(title, stat_dict):
                             language_stat['vacancies_found'],
                             language_stat['vacancies_processed'],
                             language_stat['average_salary']])
-
     _table_data.insert(0, top)
-
     table_instance = AsciiTable(_table_data, title)
     print(table_instance.table)
 
 
 def make_headhunter_salary_statistics(_languages):
+    """ Make and display the average salary from vacancies for programming languages.
+
+    Args:
+        _languages(list): The list with names of programming language.
+    """
+        
     searched_vacancies = get_all_vacancies_dict(_languages)
-    all_vacancies = make_page_vacancy_url(searched_vacancies)
+    all_vacancies = make_page_vacancy_url_list(searched_vacancies)
     temp_vacancy_language_list = [extract_vacancy_from_url(x) for x in
                                   all_vacancies]
     vacancy_language_list = (
     [vacancy for sublist in temp_vacancy_language_list for vacancy in sublist])
+    
     return make_salary_stat(vacancy_language_list)
 
 
@@ -155,5 +183,5 @@ if __name__ == '__main__':
     advisable_languages = ['Java', 'PHP', 'С++', 'R', 'Python', 'JavaScript', 'Delphi', 'Go', 'Swift', 'Ruby']
 
     hh = make_headhunter_salary_statistics(advisable_languages)
-    print_language_stat_asciitables('HeadHunter Moscow', hh)
+    print_language_stat_ascitables('HeadHunter Moscow', hh)
 
