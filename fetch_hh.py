@@ -192,7 +192,7 @@ def print_language_stat_ascitables(title, stat_dict):
 
 def make_headhunter_salary_statistics(_languages):
     """
-    Make and display the average salary.
+    Сollects statistics from hh.ru website and display the average salary.
 
     Args:
         _languages(list): The list with names of programming language.
