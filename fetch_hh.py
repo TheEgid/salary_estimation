@@ -94,14 +94,13 @@ def extract_language_and_salary(url_dict):
             raise ValueError('response error!')
 
 
-def predict_rub_salary(salary_dict, currency='RUR', multiplier=2,
+def predict_rub_salary(salary_dict, multiplier=2,
                        factor_top=0.4, factor_bottom=0.6):
     """
     Predict salary calculation. By default - ruble.
 
     Args:
         salary_dict (dict): The dictionary with a range of salaries.
-        currency(str, optional): Defaults to 'RUR'.
         multiplier(int, optional): Equal to the number of salary bounds in the
             dictionary. Defaults to 2.
         factor_top(float, optional): The factor of the top salary bound.
@@ -119,7 +118,7 @@ def predict_rub_salary(salary_dict, currency='RUR', multiplier=2,
     """
     if salary_dict is None:
         return None
-    elif salary_dict['currency'] == currency:
+    elif (salary_dict['currency'] == 'RUR') or (salary_dict['currency'] == 'rub'):
         try:
             if (salary_dict['from'] is None) and (salary_dict['to'] is not None):
                 return int(salary_dict['to']) * factor_top * multiplier
@@ -208,8 +207,8 @@ def make_headhunter_salary_statistics(_languages):
 
 
 if __name__ == '__main__':
-
-    advisable_languages = ['Java', 'PHP', 'С++', 'R', 'Python', 'JavaScript', 'Delphi', 'Go', 'Swift', 'Ruby']
+    advisable_languages = ['Java', 'PHP', 'С++', 'R', 'Python', 'JavaScript',
+                           'Delphi', 'Go', '1C', 'Ruby']
 
     hh = make_headhunter_salary_statistics(advisable_languages)
     print_language_stat_ascitables('HeadHunter Moscow', hh)
