@@ -1,7 +1,6 @@
 """Get HH Stat."""
 from __future__ import print_function
 import requests
-import pprint
 from itertools import groupby
 from terminaltables import AsciiTable
 
@@ -64,7 +63,7 @@ def make_page_vacancy_url_list(all_pages_vacancies_dict):
         for language, [_url, _pages_qty] in all_pages_vacancies_dict.items():
             for page_number in range(0, _pages_qty):
                 new_vacancies.append({language: '{}&page={}'.format(_url,
-                                                                 str(page_number))})
+                                                                    str(page_number))})
         return new_vacancies
     except (KeyError, ValueError):
         raise VacanciesDictionaryError
@@ -88,7 +87,7 @@ def extract_language_and_salary(url_dict):
             fetch = response.json()['items']
             for vacancy in fetch:
                 language_and_salary_list.append((language,
-                                        predict_rub_salary(vacancy['salary'])))
+                                                 predict_rub_salary(vacancy['salary'])))
             return language_and_salary_list
         else:
             raise ValueError('response error!')
@@ -132,8 +131,17 @@ def predict_rub_salary(salary_dict, multiplier=2,
             return None
     else:
         return None
-    
-    
+
+
+def group_salary_list(input_salary_list):
+    """Grouping."""
+    grouped_languages_salary_list = []
+    sorted_salary_list = sorted(input_salary_list, key=lambda x: x[0])
+    for _language, _raw_salary in groupby(sorted_salary_list, lambda x: x[0]):
+        grouped_languages_salary_list.append(list(_raw_salary))
+    return grouped_languages_salary_list
+
+
 def make_salary_stat(input_salary_list):
     """
     Making salary statistics.
@@ -147,24 +155,30 @@ def make_salary_stat(input_salary_list):
                               'average_salary': statistics}}
     """
     salary_stat_dict = {}
-    languages_salary_list = []
-    sorted_salary_list = sorted(input_salary_list, key=lambda x: x[0])
-    for _language, _raw_salary in groupby(sorted_salary_list, lambda x: x[0]):
-        languages_salary_list.append(list(_raw_salary))
-    for languages_salary in languages_salary_list:
+    for languages_salary in input_salary_list:
+
         languages_salary_not_none_list = [x for x in languages_salary if x[1]
                                           is not None]
-        languages_salary_not_none_mean = sum([(i[1]) for i in
-                                              languages_salary_not_none_list]) // \
-                                         len([(i[1]) for i in
-                                              languages_salary_not_none_list])
-        language_stat = {languages_salary_not_none_list[0][0]:
-                             {'vacancies_found': len(languages_salary),
-                              'vacancies_processed': len(languages_salary_not_none_list),
-                              'average_salary': int(languages_salary_not_none_mean)
-                              }
-                         }
-        salary_stat_dict.update(language_stat)
+        if len(languages_salary_not_none_list) == 0:
+            language_stat = {languages_salary[0][0]:
+                                 {'vacancies_found': len(languages_salary),
+                                  'vacancies_processed': 0,
+                                  'average_salary': 'No Data'
+                                  }
+                             }
+            salary_stat_dict.update(language_stat)
+        else:
+            languages_salary_not_none_mean = sum([(i[1]) for i in
+                                                  languages_salary_not_none_list]) // \
+                                             len([(i[1]) for i in
+                                                  languages_salary_not_none_list])
+            language_stat = {languages_salary_not_none_list[0][0]:
+                                 {'vacancies_found': len(languages_salary),
+                                  'vacancies_processed': len(languages_salary_not_none_list),
+                                  'average_salary': int(languages_salary_not_none_mean)
+                                  }
+                             }
+            salary_stat_dict.update(language_stat)
     return salary_stat_dict
 
 
@@ -189,20 +203,15 @@ def print_language_stat_ascitables(title, stat_dict):
     print(table_instance.table)
 
 
-def make_headhunter_salary_statistics(_languages):
-    """
-    Сollects statistics from hh.ru website and display the average salary.
-
-    Args:
-        _languages(list): The list with names of programming language.
-    """
-    searched_vacancies = get_all_pages_vacancies_dict(_languages)
+def make_hh_salary_statistics(language_list):
+    """Сollects statistics from hh.ru and display the average salary."""
+    searched_vacancies = get_all_pages_vacancies_dict(language_list)
     all_vacancies = make_page_vacancy_url_list(searched_vacancies)
-    temp_vacancy_language_list = [extract_language_and_salary(x) for
-                                  x in all_vacancies]
-    vacancy_language_list = (
-    [vacancy for sublist in temp_vacancy_language_list for vacancy in sublist])
-    
+    temp_vacancy_language_list = \
+        [extract_language_and_salary(x) for x in all_vacancies]
+    vacancy_language_list = \
+        group_salary_list([vacancy for sublist in temp_vacancy_language_list
+                           for vacancy in sublist])
     return make_salary_stat(vacancy_language_list)
 
 
@@ -210,6 +219,6 @@ if __name__ == '__main__':
     advisable_languages = ['Java', 'PHP', 'С++', 'R', 'Python', 'JavaScript',
                            'Delphi', 'Go', '1C', 'Ruby']
 
-    hh = make_headhunter_salary_statistics(advisable_languages)
+    hh = make_hh_salary_statistics(advisable_languages)
     print_language_stat_ascitables('HeadHunter Moscow', hh)
 
