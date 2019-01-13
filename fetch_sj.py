@@ -1,7 +1,5 @@
 """Get SJ Stat."""
-import os
 import requests
-from dotenv import load_dotenv
 from stat_services import predict_rub_salary
 from stat_services import make_salary_stat
 from stat_services import group_salary_list
@@ -46,6 +44,7 @@ def connection_sj(_id, _key, language_list, mode='get_number', page_number=0):
         else:
             raise ValueError('response error!')
     return all_vacancies_dict
+
 
 def get_all_vacancies_pages_dict(_id, _key, _language_list):
     count_vacancies_per_page = 100
@@ -96,7 +95,4 @@ def make_sj_salary_statistics(_id, _key, _language_list):
     searched_vacancies = get_vacancies_dict(_id, _key, pages_number_dict)
     grupped_stat = group_salary_list(searched_vacancies)
     return make_salary_stat(grupped_stat)
-
-
-
 

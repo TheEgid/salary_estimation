@@ -4,8 +4,6 @@ from itertools import groupby
 from terminaltables import AsciiTable
 
 
-
-
 def predict_rub_salary(salary_dict, multiplier=2,
                        factor_top=0.4, factor_bottom=0.6):
     """

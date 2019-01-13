@@ -7,7 +7,6 @@ from fetch_hh import make_hh_salary_statistics
 from stat_services import print_statistics_ascitables
 
 
-
 if __name__ == '__main__':
     dir_path = os.path.dirname(os.path.realpath(__file__))
     sys.path.insert(0, os.path.split(dir_path)[0])

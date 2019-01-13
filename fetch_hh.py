@@ -93,6 +93,7 @@ def extract_language_and_salary(url_dict):
         else:
             raise ValueError('response error!')
 
+
 def make_hh_salary_statistics(language_list):
     """Сollects statistics from hh.ru and display the average salary."""
     searched_vacancies = get_all_pages_vacancies_dict(language_list)
