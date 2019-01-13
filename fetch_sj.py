@@ -2,11 +2,9 @@
 import os
 import requests
 from dotenv import load_dotenv
-
-from fetch_hh import predict_rub_salary
-from fetch_hh import make_salary_stat
-from fetch_hh import group_salary_list
-from fetch_hh import print_language_stat_ascitables
+from stat_services import predict_rub_salary
+from stat_services import make_salary_stat
+from stat_services import group_salary_list
 
 
 def setNone(v):
@@ -95,20 +93,10 @@ def make_sj_salary_statistics(_id, _key, _language_list):
     """Сollects statistics from superjob.ru and display the average salary."""
     pages_number_dict = get_all_vacancies_pages_dict(_id, _key,
                                                      _language_list)
-    searched_vacancies = get_vacancies_dict(secret_id, secret_key,
-                                            pages_number_dict)
+    searched_vacancies = get_vacancies_dict(_id, _key, pages_number_dict)
     grupped_stat = group_salary_list(searched_vacancies)
     return make_salary_stat(grupped_stat)
 
-if __name__ == '__main__':
-    load_dotenv()
-    secret_key = os.getenv("key")
-    secret_id = os.getenv("id")
-    advisable_languages = ['Java', 'PHP', 'С++', 'R', 'Python', 'JavaScript',
-                           'Delphi', 'Go', '1C', 'Ruby']
-
-    sj = make_sj_salary_statistics(secret_id, secret_key, advisable_languages)
-    print_language_stat_ascitables('SuperJob Moscow', sj)
 
 
 
