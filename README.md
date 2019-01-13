@@ -5,9 +5,13 @@
 ### Как установить
 
 [TODO: опишите как запустить проект]
+```
 python3 main.py all
+
 python3 main.py sj
+
 python3 main.py hh
+```
 
 ### Цель проекта
 
