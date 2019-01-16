@@ -3,7 +3,7 @@ from __future__ import print_function
 import requests
 from stat_services import predict_rub_salary
 from stat_services import make_salary_stat
-from stat_services import group_salary_list
+from stat_services import group_list
 
 
 class VacanciesDictionaryError(Exception):
@@ -101,7 +101,7 @@ def make_hh_salary_statistics(language_list):
     temp_vacancy_language_list = \
         [extract_language_and_salary(x) for x in all_vacancies]
     vacancy_language_list = \
-        group_salary_list([vacancy for sublist in temp_vacancy_language_list
+        group_list([vacancy for sublist in temp_vacancy_language_list
                            for vacancy in sublist])
     return make_salary_stat(vacancy_language_list)
 

@@ -2,7 +2,7 @@
 import requests
 from stat_services import predict_rub_salary
 from stat_services import make_salary_stat
-from stat_services import group_salary_list
+from stat_services import group_list
 
 
 def setNone(v):
@@ -55,8 +55,10 @@ def get_all_vacancies_pages_dict(_id, _key, _language_list):
             if all_vacancies_qty <= count_vacancies_per_page:
                 all_vacancies_pages_dict.update({language: 1})
             elif all_vacancies_qty > count_vacancies_per_page:
-                all_vacancies_pages_dict.update({language: 1 + (all_vacancies_qty //
-                                                                count_vacancies_per_page)})
+                all_vacancies_pages_dict.update(
+                    {language: 1 + (all_vacancies_qty //
+                                                    count_vacancies_per_page)
+                     })
         return all_vacancies_pages_dict
     except KeyError:
         return None
@@ -79,10 +81,9 @@ def get_vacancies_dict(_id, _key, all_vacancies_pages_dict):
                                         'to': vacancy['payment_to'],
                                         'currency': vacancy['currency'],
                                         'gross': False}])
-        language_and_salary_list = [[x[0], (predict_rub_salary(x[1]))] for x
-                                    in language_and_salary_list]
-        language_and_salary_list = [(x[0], setNone(x[1])) for x
-                                    in language_and_salary_list]
+        _language, _salary = zip(*language_and_salary_list)
+        _salary = map(lambda x: setNone(predict_rub_salary(x)), _salary)
+        language_and_salary_list = list(zip(_language, _salary))
         return language_and_salary_list
     except (KeyError, ValueError):
         return None
@@ -93,6 +94,6 @@ def make_sj_salary_statistics(_id, _key, _language_list):
     pages_number_dict = get_all_vacancies_pages_dict(_id, _key,
                                                      _language_list)
     searched_vacancies = get_vacancies_dict(_id, _key, pages_number_dict)
-    grupped_stat = group_salary_list(searched_vacancies)
+    grupped_stat = group_list(searched_vacancies)
     return make_salary_stat(grupped_stat)
 

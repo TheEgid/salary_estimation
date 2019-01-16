@@ -43,13 +43,13 @@ def predict_rub_salary(salary_dict, multiplier=2,
         return None
 
 
-def group_salary_list(input_salary_list):
+def group_list(input_list):
     """Grouping."""
-    grouped_languages_salary_list = []
-    sorted_salary_list = sorted(input_salary_list, key=lambda x: x[0])
-    for _language, _raw_salary in groupby(sorted_salary_list, lambda x: x[0]):
-        grouped_languages_salary_list.append(list(_raw_salary))
-    return grouped_languages_salary_list
+    grouped_list = []
+    sorted_list = sorted(input_list, key=lambda x: x[0])
+    for _value, grouped_value in groupby(sorted_list, lambda x: x[0]):
+        grouped_list.append(list(grouped_value))
+    return grouped_list
 
 
 def make_salary_stat(input_salary_list):
@@ -69,7 +69,7 @@ def make_salary_stat(input_salary_list):
 
         languages_salary_not_none_list = [x for x in languages_salary if x[1]
                                           is not None]
-        if not languages_salary_not_none_list):
+        if not languages_salary_not_none_list:
             language_stat = {languages_salary[0][0]:
                                  {'vacancies_found': len(languages_salary),
                                   'vacancies_processed': 0,
