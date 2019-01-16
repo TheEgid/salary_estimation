@@ -1,5 +1,4 @@
 """Services Statistics."""
-from __future__ import print_function
 from itertools import groupby
 from terminaltables import AsciiTable
 
