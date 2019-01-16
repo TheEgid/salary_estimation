@@ -69,7 +69,7 @@ def make_salary_stat(input_salary_list):
 
         languages_salary_not_none_list = [x for x in languages_salary if x[1]
                                           is not None]
-        if len(languages_salary_not_none_list) == 0:
+        if not languages_salary_not_none_list):
             language_stat = {languages_salary[0][0]:
                                  {'vacancies_found': len(languages_salary),
                                   'vacancies_processed': 0,
