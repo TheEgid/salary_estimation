@@ -27,20 +27,18 @@ def predict_rub_salary(salary_dict, multiplier=2,
     """
     if salary_dict is None:
         return None
-    elif (salary_dict['currency'] == 'RUR') or (salary_dict['currency'] == 'rub'):
-        try:
-            if (salary_dict['from'] is None) and (salary_dict['to'] is not None):
-                return int(salary_dict['to']) * factor_top * multiplier
-            elif (salary_dict['from'] is not None) and (salary_dict['to'] is None):
-                return int(salary_dict['from']) * factor_bottom * multiplier
-            elif (salary_dict['from'] is None) and (salary_dict['to'] is None):
-                return None
-            else:
-                return (int(salary_dict['from']) + int(salary_dict['to'])) // multiplier
-        except KeyError:
-            return None
-    else:
+    if salary_dict['currency'] not in ['RUR', 'rub']:
         return None
+    try:
+        if salary_dict['from'] is not None and salary_dict['to'] is not None:
+            return int(salary_dict['from'] + salary_dict['to']) // multiplier
+        elif salary_dict['to'] is not None:
+            return int(salary_dict['to']) * factor_top * multiplier
+        elif salary_dict['from'] is not None:
+            return int(salary_dict['from']) * factor_bottom * multiplier
+    except KeyError:
+        return None
+
 
 
 def group_list(input_list):
@@ -73,7 +71,7 @@ def make_salary_stat(input_salary_list):
             language_stat = {languages_salary[0][0]:
                                  {'vacancies_found': len(languages_salary),
                                   'vacancies_processed': 0,
-                                  'average_salary': 'No Data'
+                                  'average_salary': None
                                   }
                              }
             salary_stat_dict.update(language_stat)
@@ -82,13 +80,12 @@ def make_salary_stat(input_salary_list):
                                                   languages_salary_not_none_list]) // \
                                              len([(i[1]) for i in
                                                   languages_salary_not_none_list])
-            language_stat = {languages_salary_not_none_list[0][0]:
-                                 {'vacancies_found': len(languages_salary),
-                                  'vacancies_processed': len(languages_salary_not_none_list),
-                                  'average_salary': int(languages_salary_not_none_mean)
-                                  }
-                             }
-            salary_stat_dict.update(language_stat)
+            language = languages_salary_not_none_list[0][0]
+            salary_stat_dict[language] = {
+                'vacancies_found': len(languages_salary),
+                'vacancies_processed': len(languages_salary_not_none_list),
+                'average_salary': int(languages_salary_not_none_mean)
+            }
     return salary_stat_dict
 
 

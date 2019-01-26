@@ -1,6 +1,7 @@
 """Get HH Stat."""
 from __future__ import print_function
 import requests
+import urllib.parse
 from stat_services import predict_rub_salary
 from stat_services import make_salary_stat
 from stat_services import group_list
@@ -63,8 +64,11 @@ def make_page_vacancy_url_list(all_pages_vacancies_dict):
     try:
         for language, [_url, _pages_qty] in all_pages_vacancies_dict.items():
             for page_number in range(0, _pages_qty):
-                new_vacancies.append({language: '{}&page={}'.format(_url,
-                                                                    str(page_number))})
+                query = urllib.parse.urlparse(_url).query
+                url_params = dict(urllib.parse.parse_qsl(query))
+                url_params.update({'page': page_number})
+                url = _url[:_url.find("?")]
+                new_vacancies.append({language: (url, url_params)})
         return new_vacancies
     except (KeyError, ValueError):
         raise VacanciesDictionaryError
@@ -82,8 +86,8 @@ def extract_language_and_salary(url_dict):
         ValueError: Raises an exception.
     """
     language_and_salary_list = []
-    for language, _url in url_dict.items():
-        response = requests.get(_url)
+    for language, (_url, _url_params) in url_dict.items():
+        response = requests.get(_url, params=_url_params)
         if response.ok:
             fetch = response.json()['items']
             for vacancy in fetch:
@@ -97,9 +101,9 @@ def extract_language_and_salary(url_dict):
 def make_hh_salary_statistics(language_list):
     """Сollects statistics from hh.ru and display the average salary."""
     searched_vacancies = get_all_pages_vacancies_dict(language_list)
-    all_vacancies = make_page_vacancy_url_list(searched_vacancies)
+    all_vacancies_urls = make_page_vacancy_url_list(searched_vacancies)
     temp_vacancy_language_list = \
-        [extract_language_and_salary(x) for x in all_vacancies]
+        [extract_language_and_salary(x) for x in all_vacancies_urls]
     vacancy_language_list = \
         group_list([vacancy for sublist in temp_vacancy_language_list
                            for vacancy in sublist])
