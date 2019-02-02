@@ -1,99 +1,53 @@
 """Get SJ Stat."""
 import requests
-from stat_services import predict_rub_salary
-from stat_services import make_salary_stat
-from stat_services import group_list
+from stat_services import get_predict_salary
+from stat_services import make_salary_statistics
 
 
-def setNone(v):
-    """Setting None if value is Zero."""
-    if v == 0:
-        return None
-    else:
-        return v
+def make_sj_salary_statistics(languages_list, id, key):
+    sj_statistics_list = []
+    for language in sorted(languages_list):
+        sj_salaries_list = get_salaries_sj(language, id=id, key=key)
+        sj_statistics_dict = make_salary_statistics(sj_salaries_list, language)
+        sj_statistics_list.append(sj_statistics_dict)
+    return sj_statistics_list
 
 
-def connection_sj(_id, _key, language_list, mode='get_number', page_number=0):
-    _url = 'https://api.superjob.ru/2.0/vacancies/'
-    all_vacancies_dict = {}
+def get_salaries_sj(language, id, key, region='Москва'):
+    vacancies_list = []
     count_vacancies_per_page = 100
-    category = 48
-    language_list.sort()
-    for language in language_list:
-        params = {
-            'page': page_number,
-            'count': count_vacancies_per_page,
-            'archive': False,
-            'keyword': 'Программист {}'.format(language),
-            'not_archive': True,
-            'town': 'Москва',
-            'catalogues': category
-        }
-        headers = {'X-Api-App-Id': _key,
-                   'Content-Type': 'application/x-www-form-urlencoded',
-                   'Host': 'api.superjob.ru',
-                   'Client Id': _id
-                   }
+    category_is_programming = 48
+    _url = 'https://api.superjob.ru/2.0/vacancies/'
+    params = {
+        'count': count_vacancies_per_page,
+        'archive': False,
+        'keyword': 'Программист {}'.format(language),
+        'not_archive': True,
+        'town': region,
+        'catalogues': category_is_programming
+    }
+    headers = {'X-Api-App-Id': key,
+               'Content-Type': 'application/x-www-form-urlencoded',
+               'Host': 'api.superjob.ru',
+               'Client Id': id
+               }
+    response = requests.get(_url, headers=headers, params=params)
+    if response.ok:
+        pages_qty = (response.json()['total'] // count_vacancies_per_page) + 1
+    else:
+        raise ValueError('response sj error!')
+
+    for page_number in range(pages_qty):
+        params.update({'page': page_number})
         response = requests.get(_url, headers=headers, params=params)
         if response.ok:
-            if mode == 'get_number':
-                all_vacancies_dict.update({language: response.json()['total']})
-            elif mode == 'get_stata':
-                all_vacancies_dict.update({language: response.json()})
-
+            vacancies = response.json()['objects']
+            for vacancy in vacancies:
+                vacancies_list.append({'from': vacancy['payment_from'],
+                                       'to': vacancy['payment_to'],
+                                       'currency': vacancy['currency'],
+                                       'gross': False})
         else:
-            raise ValueError('response error!')
-    return all_vacancies_dict
-
-
-def get_all_vacancies_pages_dict(_id, _key, _language_list):
-    count_vacancies_per_page = 100
-    all_vacancies_pages_dict = {}
-    try:
-        all_vacancies_dict = connection_sj(_id, _key, _language_list)
-        for language, all_vacancies_qty in all_vacancies_dict.items():
-            if all_vacancies_qty <= count_vacancies_per_page:
-                all_vacancies_pages_dict.update({language: 1})
-            elif all_vacancies_qty > count_vacancies_per_page:
-                all_vacancies_pages_dict.update(
-                    {language: 1 + (all_vacancies_qty //
-                                                    count_vacancies_per_page)
-                     })
-        return all_vacancies_pages_dict
-    except KeyError:
-        return None
-
-
-def get_vacancies_dict(_id, _key, all_vacancies_pages_dict):
-    language_and_salary_list = []
-    language_list = []
-    try:
-        for language, all_vacancies_qty in all_vacancies_pages_dict.items():
-            language_list.append(language)
-            for page_number in range(0, all_vacancies_qty):
-                fetch = connection_sj(_id, _key, language_list,
-                                      page_number=page_number,
-                                      mode='get_stata')
-                for language, vacancies in fetch.items():
-                    for vacancy in vacancies['objects']:
-                        language_and_salary_list.append(
-                            [language, {'from': vacancy['payment_from'],
-                                        'to': vacancy['payment_to'],
-                                        'currency': vacancy['currency'],
-                                        'gross': False}])
-        _language, _salary = zip(*language_and_salary_list)
-        _salary = map(lambda x: setNone(predict_rub_salary(x)), _salary)
-        language_and_salary_list = list(zip(_language, _salary))
-        return language_and_salary_list
-    except (KeyError, ValueError):
-        return None
-
-
-def make_sj_salary_statistics(_id, _key, _language_list):
-    """Сollects statistics from superjob.ru and display the average salary."""
-    pages_number_dict = get_all_vacancies_pages_dict(_id, _key,
-                                                     _language_list)
-    searched_vacancies = get_vacancies_dict(_id, _key, pages_number_dict)
-    grupped_stat = group_list(searched_vacancies)
-    return make_salary_stat(grupped_stat)
-
+            raise ValueError('response sj error!')
+    vacancies_list = [get_predict_salary(x) for x in vacancies_list]
+    return vacancies_list
