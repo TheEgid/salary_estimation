@@ -1,16 +1,6 @@
 """Get SJ Stat."""
 import requests
 from stat_services import get_predict_salary
-from stat_services import make_salary_statistics
-
-
-def make_sj_salary_statistics(languages_list, id, key):
-    sj_statistics_list = []
-    for language in sorted(languages_list):
-        sj_salaries_list = get_salaries_sj(language, id=id, key=key)
-        sj_statistics_dict = make_salary_statistics(sj_salaries_list, language)
-        sj_statistics_list.append(sj_statistics_dict)
-    return sj_statistics_list
 
 
 def get_salaries_sj(language, id, key, region='Москва'):

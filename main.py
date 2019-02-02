@@ -3,9 +3,10 @@ import argparse
 import os
 import sys
 from dotenv import load_dotenv
-from fetch_sj import make_sj_salary_statistics
-from fetch_hh import make_hh_salary_statistics
+from fetch_sj import get_salaries_sj
+from fetch_hh import get_salaries_hh
 from stat_services import print_table
+from stat_services import make_salary_statistics
 
 
 def get_args_parser():
@@ -13,6 +14,22 @@ def get_args_parser():
     parser.add_argument('command', default="all", type=str,
                         help='valid commands only: hh, sj, all')
     return parser
+
+
+def get_statistics_list(languages_list, source, id=None, key=None):
+    statistics_list = []
+    if source == 'hh':
+        for language in sorted(languages_list):
+            salaries_list = get_salaries_hh(language)
+            statistics_dict = make_salary_statistics(salaries_list, language)
+            statistics_list.append(statistics_dict)
+        return statistics_list
+    if source == 'sj':
+        for language in sorted(languages_list):
+            salaries_list = get_salaries_sj(language, id=id, key=key)
+            statistics_dict = make_salary_statistics(salaries_list, language)
+            statistics_list.append(statistics_dict)
+        return statistics_list
 
 
 def main():
@@ -28,19 +45,23 @@ def main():
                            'Delphi', 'Go', '1C', 'Ruby']
 
     if args.command == 'hh':
-        hh_statistics_list = make_hh_salary_statistics(advisable_languages)
+        hh_statistics_list = get_statistics_list(advisable_languages,
+                                                 source=args.command)
         print_table(hh_statistics_list, 'HeadHunter Moscow')
     elif args.command == 'sj':
-        sj_statistics_list = make_sj_salary_statistics(advisable_languages,
-                                                       id=secret_id,
-                                                       key=secret_key)
+        sj_statistics_list = get_statistics_list(advisable_languages,
+                                                 source=args.command,
+                                                 id=secret_id,
+                                                 key=secret_key)
         print_table(sj_statistics_list, 'SuperJob Moscow')
     elif args.command == 'all':
-        hh_statistics_list = make_hh_salary_statistics(advisable_languages)
+        hh_statistics_list = get_statistics_list(advisable_languages,
+                                                 source='hh')
         print_table(hh_statistics_list, 'HeadHunter Moscow')
-        sj_statistics_list = make_sj_salary_statistics(advisable_languages,
-                                                       id=secret_id,
-                                                       key=secret_key)
+        sj_statistics_list = get_statistics_list(advisable_languages,
+                                                 source='sj',
+                                                 id=secret_id,
+                                                 key=secret_key)
         print_table(sj_statistics_list, 'SuperJob Moscow')
     else:
         exit('Error: Bad argument')
