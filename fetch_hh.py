@@ -21,7 +21,7 @@ def get_salaries_hh(language, region=1, period=30):
             allpages = response.json()['pages']
             for vacancy in response.json()['items']:
                      vacancies_list.append(get_predict_salary(vacancy['salary']))
-            if page_number >= allpages or page_number == limit_hh_2000_items:
+            if page_number >= allpages or page_number == limit_hh_pages:
                 break
         else:
              raise ValueError('response hh error!')
