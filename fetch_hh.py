@@ -5,7 +5,7 @@ from itertools import count
 
 
 def get_salaries_hh(language, region=1, period=30):
-    limit_hh_2000_items = 99
+    limit_hh_pages = 99
     vacancies_list = []
     _url = 'https://api.hh.ru/vacancies'
     params = {
